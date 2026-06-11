@@ -913,10 +913,14 @@ function renderManagerTabContent(shop, isSubActive) {
               <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem;">Detailed Specifications / Description</label>
               <textarea id="prod-desc" class="input-field" style="height: 90px; resize: vertical;" required></textarea>
             </div>
-            <div>
-              <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem;">Product Image URL (Optional)</label>
-              <input id="prod-image" type="url" placeholder="https://..." class="input-field" />
-            </div>
+
+            //input for multiple images with add/remove functionality
+             <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem;">Product Images (multiple)</label>
+<div id="prod-images-list" style="display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.5rem;"></div>
+<div style="display: flex; gap: 0.5rem;">
+  <input id="prod-image-input" type="url" placeholder="https://image-url.jpg" class="input-field" style="flex:1;" />
+  <button type="button" id="btn-add-prod-image" class="btn btn-secondary" style="padding: 0.5rem 0.75rem; white-space:nowrap;">+ Add</button>
+</div>
             <div>
               <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem;">External Purchase Link (Optional)</label>
               <input id="prod-url" type="url" placeholder="https://..." class="input-field" />
