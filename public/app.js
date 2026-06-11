@@ -2,102 +2,22 @@
 const STORAGE_KEY = 'sagura_market_data';
 
 const getInitialData = () => {
-  const thirtyDaysFromNow = new Date();
-  thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-
   return {
     superAdmin: {
       username: 'super_admin',
-      passwordHash: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918' // simple hash of admin_password
+      passwordHash: '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'
     },
     paymentSettings: {
       monthlyFeeTZS: 15000,
       monthlyFeeUSD: 5.70,
+      trialDays: 7,
       gateways: [
         { id: 'mpesa', name: 'M-Pesa (Lipa Namba)', detail: 'Lipa Namba: 544322 (SAGURA MARKET)' },
         { id: 'tigopesa', name: 'Tigo Pesa (Lipa)', detail: 'Lipa Namba: 889911' },
         { id: 'card', name: 'Credit Card / Visa', detail: 'USD Gateway Secure' }
       ]
     },
-    businesses: {
-      '803b343739904d42b34226901e482d1e': {
-        id: '803b343739904d42b34226901e482d1e',
-        username: 'global_manager',
-        passwordHash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', // simple hash of 'password'
-        shopName: 'Global Logistics Corp',
-        description: 'Leading international B2B cargo distribution, bulk transport, and commercial warehouse storage. Providing custom logistics solutions for high-capacity manufacturers worldwide.',
-        primaryColor: '#3b82f6',
-        themeStyle: 'glass',
-        whatsapp: '+255712345678',
-        email: 'info@globallogistics.co.tz',
-        locationName: 'Plot 120, Nelson Mandela Road, Dar es Salaam, Tanzania',
-        coordinates: { lat: -6.8200, lng: 39.2600 },
-        adPaid: true,
-        adExpiry: thirtyDaysFromNow.toISOString(),
-        products: [
-          {
-            id: 'gl1',
-            name: 'Bulk Ocean Freight Container (FCL)',
-            price: '2,500,000 TZS',
-            description: 'Full Container Load (FCL) cargo shipping services internationally. Includes comprehensive customs clearance support, marine insurance handling, and port terminal distribution.',
-            image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=400',
-            url: 'https://example.com/purchase/ocean-freight'
-          },
-          {
-            id: 'gl2',
-            name: 'Heavy Road Transport (Flatbed / haul)',
-            price: '15,000 TZS per Km',
-            description: 'Interstate bulk cargo transport using high-capacity flatbeds and heavy cargo haulers. Specialized team for route clearance and pilot vehicle escorts.',
-            image: 'https://images.unsplash.com/photo-1592838064821-7ec1552047f1?auto=format&fit=crop&q=80&w=400',
-            url: 'https://example.com/purchase/heavy-transport'
-          },
-          {
-            id: 'gl3',
-            name: 'Secure Bonded Warehouse Storage',
-            price: '25,000 TZS / Sqm',
-            description: 'Temperature-controlled depot with 24/7 armed security patrols, active CCTV surveillance, and automated WMS barcode stock-tracking systems.',
-            image: '', 
-            url: 'https://example.com/purchase/warehouse'
-          }
-        ]
-      },
-      'kili_agro': {
-        id: 'kili_agro',
-        username: 'kili_manager',
-        passwordHash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', // 'password'
-        shopName: 'Kilimanjaro Agro Wholesalers',
-        description: 'Bulk exporters of grade-AA organic Arabica coffee and premium raw cashew nuts harvested directly from smallholder farms on the slopes of Mt. Kilimanjaro.',
-        primaryColor: '#10b981',
-        themeStyle: 'modern',
-        whatsapp: '+255754987654',
-        email: 'sales@kiliagro.co.tz',
-        locationName: 'Moshi Urban, Kilimanjaro Region, Tanzania',
-        coordinates: { lat: -3.3400, lng: 37.3400 },
-        adPaid: false, // Expired to showcase payment block
-        adExpiry: yesterday.toISOString(),
-        products: [
-          {
-            id: 'ka1',
-            name: 'Green Arabica Coffee Beans (Grade AA)',
-            price: '12,000,000 TZS per Ton',
-            description: 'Unroasted, certified organic Arabica coffee beans. Carefully sorted, moisture-locked at 11.5% and packaged in robust 60kg sisal bags.',
-            image: 'https://images.unsplash.com/photo-1447933601403-0c6688de566e?auto=format&fit=crop&q=80&w=400',
-            url: 'https://example.com/purchase/coffee'
-          },
-          {
-            id: 'ka2',
-            name: 'Processed Cashew Nuts W240 (Raw bulk)',
-            price: '1,800,000 TZS per 100Kg',
-            description: 'Export-grade white whole kernels cashew nuts. Size count W240 (jumbo nuts), vacuum-sealed for global shipping compliance.',
-            image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=400',
-            url: 'https://example.com/purchase/cashews'
-          }
-        ]
-      }
-    }
+    businesses: {}
   };
 };
 
@@ -122,6 +42,63 @@ function checkSubscriptionStatus(business) {
   const expiryDate = new Date(business.adExpiry);
   const now = new Date();
   return expiryDate > now;
+}
+
+
+// Trial Helper Functions
+// Check if free trial is still active
+function isTrialActive(business) {
+  if (!business.trialEndsAt) return false;
+
+  const now = new Date();
+  const trialEnd = new Date(business.trialEndsAt);
+
+  return trialEnd > now;
+}
+
+// Get remaining trial days
+function getRemainingTrialDays(business) {
+  if (!business.trialEndsAt) return 0;
+
+  const now = new Date();
+  const trialEnd = new Date(business.trialEndsAt);
+
+  const diffTime = trialEnd - now;
+
+  return Math.max(
+    0,
+    Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  );
+}
+
+// Check if business can be shown
+// (Active subscription OR active trial)
+function canDisplayBusiness(business) {
+
+    // Paid subscription active
+    if (checkSubscriptionStatus(business)) {
+        return true;
+    }
+
+    // Trial active
+    if (isTrialActive(business)) {
+        return true;
+    }
+
+    return false;
+}
+// Get current account status
+function getBusinessStatus(business) {
+
+  if (checkSubscriptionStatus(business)) {
+    return 'subscribed';
+  }
+
+  if (isTrialActive(business)) {
+    return 'trial';
+  }
+
+  return 'expired';
 }
 
 function hashPassword(password) {
@@ -154,30 +131,28 @@ function validateLinkURL(url) {
 }
 
 // --- Session States ---
-let currentSession = null; // { role: 'manager' | 'super', businessId?: string }
-let shopViewMode = 'grid'; // client default product display layout mode
-let activeManagerTab = 'profile'; // 'profile', 'products', 'billing'
-let editingProductId = null; // null for add, string id for edit
+let currentSession = null;
+let shopViewMode = 'grid';
+let activeManagerTab = 'profile';
+let editingProductId = null;
 
 // --- Application Router ---
 function router() {
   const hash = window.location.hash || '#/';
   const viewport = document.getElementById('app-viewport');
   const navbar = document.getElementById('platform-navbar');
-  
-  // Clean custom shop theme changes on global pages
+
   document.documentElement.style.removeProperty('--shop-primary');
   document.documentElement.style.removeProperty('--shop-primary-glow');
 
-  // Handle active states on navbar links
   document.getElementById('nav-find-shops').classList.remove('active');
-  
+
   if (hash === '#/') {
     navbar.style.display = 'flex';
     document.getElementById('nav-find-shops').classList.add('active');
     renderHome(viewport);
   } else if (hash.startsWith('#/shop/')) {
-    navbar.style.display = 'none'; // hide navigation for full custom sub-website simulation
+    navbar.style.display = 'none';
     const shopId = hash.split('#/shop/')[1];
     renderShopfront(viewport, shopId);
   } else if (hash === '#/super-admin') {
@@ -186,11 +161,16 @@ function router() {
   } else if (hash === '#/dashboard') {
     navbar.style.display = 'flex';
     renderManager(viewport);
+  } else if (hash === '#/login') {
+    navbar.style.display = 'flex';
+    renderLoginPage(viewport);
+  } else if (hash === '#/register') {
+    navbar.style.display = 'flex';
+    renderRegisterPage(viewport);
   } else {
     viewport.innerHTML = `<div style="text-align:center; padding:5rem 2rem;"><h2>Page Not Found</h2><a href="#/" class="btn btn-primary" style="margin-top:1rem;">Back to Directory</a></div>`;
   }
-  
-  // Redraw icons loaded dynamically
+
   lucide.createIcons();
 }
 
@@ -202,11 +182,11 @@ window.addEventListener('load', router);
 // 1. Landing Page
 function renderHome(container) {
   const searchQuery = container.dataset.searchQuery || '';
-  const filterType = container.dataset.filterType || 'all'; // 'all' or 'featured'
+  const filterType = container.dataset.filterType || 'all';
   const allBusinesses = Object.values(db.businesses);
-  
+
   const filtered = allBusinesses.filter(biz => {
-    const isSubActive = checkSubscriptionStatus(biz);
+    const isSubActive = canDisplayBusiness(biz);
     const matchesSearch = biz.shopName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       biz.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       biz.locationName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -264,7 +244,7 @@ function renderHome(container) {
             style="padding-left: 3rem; font-size: 1.05rem; height: 52px;"
           />
         </div>
-        
+
         <div style="display: flex; justify-content: space-between; alignItems: center; flex-wrap: wrap; gap: 1rem;">
           <div style="display: flex; gap: 0.5rem;">
             <button id="btn-filter-all" class="btn ${filterType === 'all' ? 'btn-primary' : 'btn-secondary'}" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
@@ -282,7 +262,7 @@ function renderHome(container) {
 
       <!-- Grid list -->
       <h2 style="font-size: 1.75rem; margin-bottom: 1.5rem; font-family: var(--font-heading);">Wholesaler Showrooms Directory</h2>
-      
+
       ${filtered.length === 0 ? `
         <div class="glass-panel" style="padding: 3rem; text-align: center; color: var(--text-muted);">
           <i data-lucide="alert-triangle" style="width: 48px; height: 48px; color: var(--color-accent); margin: 0 auto 1rem auto;"></i>
@@ -295,7 +275,7 @@ function renderHome(container) {
             const isSubActive = checkSubscriptionStatus(biz);
             return `
               <div class="glass-panel animate-fade" style="padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; border-top: ${isSubActive ? `4px solid ${biz.primaryColor}` : '1px solid var(--border-light)'}; position: relative;">
-                
+
                 ${isSubActive ? `
                   <span style="position: absolute; top: 12px; right: 12px; background: rgba(16, 185, 129, 0.15); color: var(--color-secondary); padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem;">
                     <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i> Sponsored
@@ -311,7 +291,7 @@ function renderHome(container) {
                   <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; height: 4.5em;">
                     ${biz.description}
                   </p>
-                  
+
                   <div style="display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.5rem;">
                     <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
                       <i data-lucide="map-pin" style="width: 16px; height: 16px;"></i>
@@ -331,7 +311,6 @@ function renderHome(container) {
     </div>
   `;
 
-  // Bind Search events
   const searchInput = document.getElementById('search-input');
   searchInput.addEventListener('input', (e) => {
     container.dataset.searchQuery = e.target.value;
@@ -339,7 +318,6 @@ function renderHome(container) {
     lucide.createIcons();
   });
 
-  // Bind filter toggles
   document.getElementById('btn-filter-all').addEventListener('click', () => {
     container.dataset.filterType = 'all';
     renderHome(container);
@@ -362,13 +340,11 @@ function renderShopfront(container, shopId) {
 
   const isSubActive = checkSubscriptionStatus(shop);
 
-  // Apply colors dynamically to viewport CSS variables
   document.documentElement.style.setProperty('--shop-primary', shop.primaryColor || '#3b82f6');
   document.documentElement.style.setProperty('--shop-primary-glow', `${shop.primaryColor || '#3b82f6'}2c`);
 
   container.innerHTML = `
     <div class="shop-wrapper shop-theme-${shop.themeStyle || 'glass'} animate-fade">
-      <!-- Shopfront Header -->
       <header class="shop-header">
         <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem;">
           <div>
@@ -408,29 +384,26 @@ function renderShopfront(container, shopId) {
         </div>
       </header>
 
-      <!-- Main Container -->
       <main style="max-width: 1200px; margin: 3rem auto 0 auto; padding: 0 1.5rem;">
         ${!isSubActive ? `
-          <!-- Catalog Blocked Overlay -->
           <div class="glass-panel" style="padding: 3.5rem 2rem; text-align: center; margin-bottom: 3rem; border-left: 4px solid var(--color-danger);">
             <i data-lucide="lock" style="width: 64px; height: 64px; color: var(--color-danger); margin: 0 auto 1.5rem auto;"></i>
             <h2 style="font-size: 1.75rem; margin-bottom: 0.75rem;">Showroom Catalog Hidden</h2>
             <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto 1.5rem auto; line-height: 1.6;">
-              The advertisement and showroom subscription for <strong>${shop.shopName}</strong> has expired. 
+              The advertisement and showroom subscription for <strong>${shop.shopName}</strong> has expired.
               Sub-websites are automatically blocked once the monthly payment (15,000 TZS / $5.70 USD) ends.
             </p>
             <div style="display: flex; gap: 1rem; justify-content: center;">
-              <a href="#/dashboard" class="btn btn-primary">Wholesaler Dashboard Login</a>
+              <a href="#/login" class="btn btn-primary">Wholesaler Login</a>
               <a href="#/" class="btn btn-secondary">Back to Market Directory</a>
             </div>
           </div>
         ` : `
-          <!-- Active Products Grid -->
           <div style="display: grid; grid-template-columns: 1fr 320px; gap: 2.5rem; align-items: start;">
             <div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                 <h2 style="font-size: 1.5rem; font-family: var(--font-heading);">Product Inventory</h2>
-                
+
                 <div style="display: flex; gap: 0.4rem; background: rgba(255,255,255,0.03); padding: 0.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                   <button id="toggle-grid-mode" class="theme-button-toggle ${shopViewMode === 'grid' ? 'active' : ''}" title="Visual Grid View">
                     <i data-lucide="grid" style="width: 16px; height: 16px;"></i>
@@ -446,7 +419,6 @@ function renderShopfront(container, shopId) {
               </div>
             </div>
 
-            <!-- Sidebar Info -->
             <aside style="display: flex; flex-direction: column; gap: 2rem;">
               <div class="glass-panel" style="padding: 1.5rem;">
                 <h3 style="font-size: 1.15rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -456,28 +428,11 @@ function renderShopfront(container, shopId) {
                   ${shop.locationName}
                 </p>
 
-                <!-- Mock Interactive Map -->
-                <div class="map-canvas">
-                  <div class="map-radar"></div>
-                  <div style="position: relative; z-index: 2; background: var(--shop-primary); color: white; padding: 0.5rem; border-radius: 50%; box-shadow: 0 0 15px var(--shop-primary);">
-                    <i data-lucide="map-pin" style="width: 20px; height: 20px;"></i>
-                  </div>
-                  
-                  <div style="position: absolute; top: 0; bottom: 0; left: 25%; width: 1px; background: rgba(255,255,255,0.03);"></div>
-                  <div style="position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: rgba(255,255,255,0.03);"></div>
-                  <div style="position: absolute; top: 0; bottom: 0; left: 75%; width: 1px; background: rgba(255,255,255,0.03);"></div>
-                  <div style="position: absolute; left: 0; right: 0; top: 33%; height: 1px; background: rgba(255,255,255,0.03);"></div>
-                  <div style="position: absolute; left: 0; right: 0; top: 66%; height: 1px; background: rgba(255,255,255,0.03);"></div>
+              <div id="leaflet-map-${shop.id}" style="height: 220px; border-radius: 10px; margin-top: 0.5rem; z-index: 1;"></div>
 
-                  <span style="position: absolute; bottom: 8px; font-size: 0.7rem; color: rgba(255,255,255,0.4); font-family: monospace;">
-                    Coords: ${shop.coordinates?.lat?.toFixed(4)}, ${shop.coordinates?.lng?.toFixed(4)}
-                  </span>
-                </div>
-
-                <a href="https://www.openstreetmap.org/?mlat=${shop.coordinates?.lat}&mlon=${shop.coordinates?.lng}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="width: 100%; justify-content: center; margin-top: 1rem; font-size: 0.85rem;">
-                  View Large Map
+                <a href="https://www.openstreetmap.org/?mlat=${shop.coordinates?.lat}&mlon=${shop.coordinates?.lng}#map=15/${shop.coordinates?.lat}/${shop.coordinates?.lng}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="width: 100%; justify-content: center; margin-top: 1rem; font-size: 0.85rem;">
+                  <i data-lucide="map-pin" style="width:14px; height:14px;"></i> Open in OpenStreetMap
                 </a>
-              </div>
 
               <div class="glass-panel" style="padding: 1.25rem; border-left: 3px solid var(--color-secondary);">
                 <h4 style="font-size: 0.95rem; color: #10b981; display: flex; align-items: center; gap: 0.4rem;">
@@ -493,8 +448,40 @@ function renderShopfront(container, shopId) {
       </main>
     </div>
   `;
+    
+    // Initialize Leaflet map
+  const mapContainer = document.getElementById(`leaflet-map-${shop.id}`);
+  if (mapContainer && shop.coordinates?.lat && shop.coordinates?.lng) {
+    const map = L.map(`leaflet-map-${shop.id}`).setView(
+      [shop.coordinates.lat, shop.coordinates.lng], 15
+    );
 
-  // Bind view toggles (only if active)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const markerColor = shop.primaryColor || '#6366f1';
+
+    const customIcon = L.divIcon({
+      className: '',
+      html: `<div style="
+        background: ${markerColor};
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 3px solid white;
+        box-shadow: 0 0 10px ${markerColor};
+      "></div>`,
+      iconSize: [16, 16],
+      iconAnchor: [8, 8]
+    });
+
+    L.marker([shop.coordinates.lat, shop.coordinates.lng], { icon: customIcon })
+      .addTo(map)
+      .bindPopup(`<strong>${shop.shopName}</strong><br>${shop.locationName}`)
+      .openPopup();
+  }
+
   if (isSubActive) {
     const btnGrid = document.getElementById('toggle-grid-mode');
     const btnList = document.getElementById('toggle-list-mode');
@@ -678,13 +665,11 @@ function renderSuperAdmin(container) {
     </div>
   `;
 
-  // Bind logout
   document.getElementById('admin-logout-btn').addEventListener('click', () => {
     currentSession = null;
     router();
   });
 
-  // Bind toggle action
   document.querySelectorAll('.btn-toggle-block').forEach(btn => {
     btn.addEventListener('click', () => {
       const shopId = btn.dataset.id;
@@ -706,7 +691,6 @@ function renderSuperAdmin(container) {
     });
   });
 
-  // Bind settings form
   document.getElementById('admin-settings-form').addEventListener('submit', (e) => {
     e.preventDefault();
     db.paymentSettings.monthlyFeeTZS = Number(document.getElementById('admin-tzs-input').value);
@@ -749,7 +733,7 @@ function renderSuperAdminLogin(container) {
     const u = document.getElementById('admin-user').value;
     const p = document.getElementById('admin-pass').value;
     const hash = hashPassword(p);
-    
+
     if (u === db.superAdmin.username && hash === '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918') {
       currentSession = { role: 'super' };
       router();
@@ -769,14 +753,14 @@ function renderManager(container) {
   }
 
   const shop = db.businesses[currentSession.businessId];
-  const isSubActive = checkSubscriptionStatus(shop);
+  const isSubActive = canDisplayBusiness(shop);
 
   container.innerHTML = `
     <div style="padding: 2.5rem 1.5rem; max-width: 1200px; margin: 0 auto;" class="animate-fade">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; flex-wrap: wrap; gap: 1rem;">
         <div>
           <h1 style="font-size: 2rem; display: flex; align-items: center; gap: 0.5rem;">
-            <i data-lucide="globe" style="color: ${shop.primaryColor || 'var(--color-primary)'}; width:28px; height:28px;"></i> 
+            <i data-lucide="globe" style="color: ${shop.primaryColor || 'var(--color-primary)'}; width:28px; height:28px;"></i>
             ${shop.shopName} Dashboard
           </h1>
           <p style="color: var(--text-muted); font-size: 0.9rem;">Configure colors, manage products list, and verify payments status</p>
@@ -787,7 +771,6 @@ function renderManager(container) {
         </div>
       </div>
 
-      <!-- Tab Switchers -->
       <div style="display: flex; gap: 1rem; border-bottom: 1px solid var(--border-light); margin-bottom: 2.5rem; padding-bottom: 0.5rem;">
         <button id="tab-profile-btn" class="btn ${activeManagerTab === 'profile' ? 'btn-primary' : 'btn-secondary'}" style="padding: 0.5rem 1.25rem; font-size: 0.9rem;">
           Branding & Customization
@@ -807,17 +790,15 @@ function renderManager(container) {
     </div>
   `;
 
-  // Bind tab buttons
   document.getElementById('tab-profile-btn').addEventListener('click', () => { activeManagerTab = 'profile'; renderManager(container); });
   document.getElementById('tab-products-btn').addEventListener('click', () => { activeManagerTab = 'products'; renderManager(container); });
   document.getElementById('tab-billing-btn').addEventListener('click', () => { activeManagerTab = 'billing'; renderManager(container); });
-  
+
   document.getElementById('manager-logout-btn').addEventListener('click', () => {
     currentSession = null;
     router();
   });
 
-  // Bind inner Tab interactions
   bindManagerTabActions(container, shop);
 }
 
@@ -890,7 +871,6 @@ function renderManagerTabContent(shop, isSubActive) {
   } else if (activeManagerTab === 'products') {
     return `
       <div style="display: grid; grid-template-columns: 1fr 400px; gap: 2.5rem; align-items: start;">
-        <!-- Products Table -->
         <div class="glass-panel" style="padding: 2rem;">
           <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Current Showroom Products</h2>
           ${shop.products.length === 0 ? `
@@ -916,7 +896,6 @@ function renderManagerTabContent(shop, isSubActive) {
           `}
         </div>
 
-        <!-- Add/Edit form -->
         <div class="glass-panel" style="padding: 2rem;">
           <h3 style="font-size: 1.15rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
             <i data-lucide="${editingProductId ? 'edit' : 'plus'}"></i> ${editingProductId ? 'Modify Product Details' : 'Upload New Product'}
@@ -952,11 +931,44 @@ function renderManagerTabContent(shop, isSubActive) {
       </div>
     `;
   } else {
-    // Billing Tab
     return `
       <div style="display: grid; grid-template-columns: 1fr 400px; gap: 2.5rem; align-items: start;">
         <div class="glass-panel" style="padding: 2rem;">
           <h2 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Current Showroom Ad Account</h2>
+               
+                       ${isTrialActive(shop) ? `
+<div style="
+background:rgba(59,130,246,.1);
+padding:15px;
+border-left:4px solid #3b82f6;
+margin-bottom:20px;
+border-radius:8px;
+">
+<h3>Free Trial Active</h3>
+
+<p>
+${getRemainingTrialDays(shop)}
+ day(s) remaining
+</p>
+</div>
+` : ''}
+
+  ${getRemainingTrialDays(shop) <= 2 &&
+isTrialActive(shop)
+? `
+<div style="
+background:rgba(239,68,68,.1);
+padding:15px;
+border-left:4px solid red;
+margin-bottom:20px;
+border-radius:8px;
+">
+Trial expires soon.
+Please pay before expiration.
+</div>
+`
+: ''}
+
           <div style="display: flex; gap: 1.5rem; align-items: center; margin-bottom: 2rem; background: rgba(255,255,255,0.01); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border-light);">
             <i data-lucide="calendar" style="width:48px; height:48px; color: ${isSubActive ? 'var(--color-secondary)' : 'var(--color-danger)'};"></i>
             <div>
@@ -976,7 +988,7 @@ function renderManagerTabContent(shop, isSubActive) {
             </div>
           ` : ''}
           <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
-            SAGURAmarket billing cycles are month-to-month. You can renew your subscription at any time to add 30 additional days of premium showroom visibility. Payments are processed securely via local mobile networks or card checkout.
+            SAGURAmarket billing cycles are month-to-month. You can renew your subscription at any time to add 30 additional days of premium showroom visibility.
           </p>
         </div>
 
@@ -1014,63 +1026,73 @@ function renderManagerTabContent(shop, isSubActive) {
 
 function bindManagerTabActions(container, shop) {
   if (activeManagerTab === 'profile') {
-    // Sync picker and input hex text
     const colorPicker = document.getElementById('profile-color-picker');
     const colorText = document.getElementById('profile-color-text');
     colorPicker.addEventListener('input', (e) => { colorText.value = e.target.value; });
     colorText.addEventListener('input', (e) => { colorPicker.value = e.target.value; });
 
-    // Profile form submit
-    document.getElementById('profile-edit-form').addEventListener('submit', (e) => {
+    document.getElementById('profile-edit-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       shop.shopName = sanitizeHTML(document.getElementById('profile-name').value);
       shop.description = sanitizeHTML(document.getElementById('profile-desc').value);
       shop.primaryColor = colorText.value;
       shop.themeStyle = document.getElementById('profile-theme').value;
       shop.locationName = sanitizeHTML(document.getElementById('profile-address').value);
-      shop.coordinates = {
-        lat: Number(document.getElementById('profile-lat').value),
-        lng: Number(document.getElementById('profile-lng').value)
-      };
+       const locationInput = document.getElementById('profile-address').value;
+      const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationInput)}&format=json&limit=1`);
+      const geoData = await geoRes.json();
+
+      if (geoData.length > 0) {
+        shop.coordinates = {
+          lat: parseFloat(geoData[0].lat),
+          lng: parseFloat(geoData[0].lon)
+        };
+        document.getElementById('profile-lat').value = geoData[0].lat;
+        document.getElementById('profile-lng').value = geoData[0].lon;
+      } else {
+        shop.coordinates = {
+          lat: Number(document.getElementById('profile-lat').value),
+          lng: Number(document.getElementById('profile-lng').value)
+        };
+      }
       shop.whatsapp = document.getElementById('profile-wa').value;
       shop.email = document.getElementById('profile-email').value;
 
       saveData();
-      alert('Showroom branding updated!');
-      renderManager(container);
+      alert('Showroom branding updated! Please login again to see changes.');
+      currentSession = null;
+      window.location.hash = '#/login';
     });
   } else if (activeManagerTab === 'products') {
-    const nameInput = document.getElementById('prod-name');
+    const nameInput  = document.getElementById('prod-name');
     const priceInput = document.getElementById('prod-price');
-    const descInput = document.getElementById('prod-desc');
-    const imgInput = document.getElementById('prod-image');
-    const urlInput = document.getElementById('prod-url');
+    const descInput  = document.getElementById('prod-desc');
+    const imgInput   = document.getElementById('prod-image');
+    const urlInput   = document.getElementById('prod-url');
 
-    // Pre-fill form if editing
     if (editingProductId) {
       const prod = shop.products.find(p => p.id === editingProductId);
       if (prod) {
-        nameInput.value = prod.name;
+        nameInput.value  = prod.name;
         priceInput.value = prod.price;
-        descInput.value = prod.description;
-        imgInput.value = prod.image || '';
-        urlInput.value = prod.url || '';
+        descInput.value  = prod.description;
+        imgInput.value   = prod.image || '';
+        urlInput.value   = prod.url || '';
       }
     }
 
-    // Submit product form
     document.getElementById('product-crud-form').addEventListener('submit', (e) => {
       e.preventDefault();
       if (editingProductId) {
-        shop.products = shop.products.map(p => 
-          p.id === editingProductId 
-            ? { 
-                ...p, 
-                name: sanitizeHTML(nameInput.value), 
-                price: sanitizeHTML(priceInput.value), 
-                description: sanitizeHTML(descInput.value), 
-                image: imgInput.value, 
-                url: urlInput.value 
+        shop.products = shop.products.map(p =>
+          p.id === editingProductId
+            ? {
+                ...p,
+                name: sanitizeHTML(nameInput.value),
+                price: sanitizeHTML(priceInput.value),
+                description: sanitizeHTML(descInput.value),
+                image: imgInput.value,
+                url: urlInput.value
               }
             : p
         );
@@ -1090,7 +1112,6 @@ function bindManagerTabActions(container, shop) {
       renderManager(container);
     });
 
-    // Delete handlers
     document.querySelectorAll('.manager-delete-prod-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         if (!confirm('Delete this product from your directory?')) return;
@@ -1101,7 +1122,6 @@ function bindManagerTabActions(container, shop) {
       });
     });
 
-    // Edit handlers
     document.querySelectorAll('.manager-edit-prod-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         editingProductId = btn.dataset.id;
@@ -1109,7 +1129,6 @@ function bindManagerTabActions(container, shop) {
       });
     });
 
-    // Cancel edit
     const cancelBtn = document.getElementById('btn-cancel-edit-prod');
     if (cancelBtn) {
       cancelBtn.addEventListener('click', () => {
@@ -1118,10 +1137,9 @@ function bindManagerTabActions(container, shop) {
       });
     }
   } else if (activeManagerTab === 'billing') {
-    const gatewaySelect = document.getElementById('checkout-gateway-select');
+    const gatewaySelect      = document.getElementById('checkout-gateway-select');
     const gatewayInstruction = document.getElementById('gateway-detail-instruction');
-    
-    // Gateway selection dynamic label update
+
     gatewaySelect.addEventListener('change', (e) => {
       const selected = db.paymentSettings.gateways.find(g => g.id === e.target.value);
       if (selected) {
@@ -1129,26 +1147,44 @@ function bindManagerTabActions(container, shop) {
       }
     });
 
-    // Simulation checkout
     document.getElementById('manager-payment-form').addEventListener('submit', (e) => {
       e.preventDefault();
       const checkoutBtn = document.getElementById('btn-complete-checkout');
       checkoutBtn.disabled = true;
       checkoutBtn.innerText = 'Authorizing payment transaction...';
+        const currentDate = new Date();
 
-      setTimeout(() => {
-        const currentExpiry = new Date(shop.adExpiry);
-        const today = new Date();
-        const baseDate = currentExpiry > today ? currentExpiry : today;
-        baseDate.setDate(baseDate.getDate() + 30);
+let baseDate = currentDate;
 
-        shop.adExpiry = baseDate.toISOString();
-        shop.adPaid = true;
-        
-        saveData();
-        alert('Payment confirmed! Showroom visibility extended by 30 days.');
-        renderManager(container);
-      }, 2000);
+// If subscription still active, extend from current expiry
+if (shop.adExpiry && new Date(shop.adExpiry) > currentDate) {
+    baseDate = new Date(shop.adExpiry);
+}
+
+// Add 30 days
+baseDate.setDate(baseDate.getDate() + 30);
+
+shop.adExpiry = baseDate.toISOString();
+
+shop.adPaid = true;
+
+shop.paymentPending = false;
+
+// Save payment history
+shop.paymentRequests.push({
+    id: Date.now(),
+    amount: db.paymentSettings.monthlyFeeTZS,
+    paidAt: new Date().toISOString(),
+    status: 'completed'
+});
+
+saveData();
+
+alert(
+    'Payment successful. Subscription activated for 30 days.'
+);
+
+renderManager(document.getElementById('app-viewport'));
     });
   }
 }
@@ -1171,11 +1207,14 @@ function renderManagerLogin(container) {
             <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem;">Password</label>
             <input id="manager-pass" type="password" class="input-field" required />
             <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.4rem;">
-              Credentials: global_manager / password <br />Or: kili_manager / password (demo expired)
+              Demo: global_manager / password &nbsp;|&nbsp; kili_manager / password
             </span>
           </div>
           <div id="manager-login-error" style="color: var(--color-danger); font-size: 0.85rem; text-align: center; display:none;"></div>
           <button type="submit" class="btn btn-primary" style="justify-content: center; margin-top: 0.5rem;">Access Dashboard</button>
+          <p style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+            New wholesaler? <a href="#/register" style="color: var(--color-primary); text-decoration: none; font-weight: 600;">Register your business</a>
+          </p>
         </form>
       </div>
     </div>
@@ -1186,15 +1225,15 @@ function renderManagerLogin(container) {
     const u = document.getElementById('manager-user').value;
     const p = document.getElementById('manager-pass').value;
     const hash = hashPassword(p);
-    
+
     const targetShop = Object.values(db.businesses).find(
       (b) => b.username === u && b.passwordHash === hash
     );
 
     if (targetShop) {
       currentSession = { role: 'manager', businessId: targetShop.id };
-      activeManagerTab = 'profile'; // Reset tab
-      editingProductId = null; // Clear edit pointer
+      activeManagerTab = 'profile';
+      editingProductId = null;
       router();
     } else {
       const errMsg = document.getElementById('manager-login-error');
@@ -1202,4 +1241,285 @@ function renderManagerLogin(container) {
       errMsg.style.display = 'block';
     }
   });
+}
+
+// 5. Public Login Page (for nav Login button)
+function renderLoginPage(container) {
+  if (currentSession) {
+    window.location.hash = currentSession.role === 'super' ? '#/super-admin' : '#/dashboard';
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+      <div class="glass-panel animate-slide" style="width: 100%; max-width: 420px; padding: 2.5rem;">
+
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <i data-lucide="store" style="width: 44px; height: 44px; color: var(--color-primary);"></i>
+          <h2 style="margin-top: 0.75rem; font-family: var(--font-heading);">Welcome Back</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Login to your wholesaler account</p>
+        </div>
+
+        <form id="login-page-form" style="display: flex; flex-direction: column; gap: 1.25rem;">
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Username</label>
+            <input id="lp-username" type="text" class="input-field" placeholder="your_business_username" required />
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Password</label>
+            <input id="lp-password" type="password" class="input-field" placeholder="••••••••" required />
+          </div>
+
+          <div id="lp-error" style="display:none; color: var(--color-danger); font-size: 0.85rem; text-align: center; background: rgba(239,68,68,0.08); padding: 0.6rem; border-radius: 6px;"></div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; height: 48px; font-size: 1rem; margin-top: 0.25rem;">
+            <i data-lucide="log-in" style="width: 16px; height: 16px;"></i> Login to Dashboard
+          </button>
+        </form>
+
+        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-light); text-align: center;">
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            No account yet?
+            <a href="#/register" style="color: var(--color-primary); text-decoration: none; font-weight: 600;"> List Your Business</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  `;
+  lucide.createIcons();
+
+  document.getElementById('login-page-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const u    = document.getElementById('lp-username').value.trim();
+    const p    = document.getElementById('lp-password').value;
+    const hash = hashPassword(p);
+
+    // Check super admin
+    if (u === db.superAdmin.username && hash === '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918') {
+      currentSession = { role: 'super' };
+      window.location.hash = '#/super-admin';
+      return;
+    }
+
+    // Check wholesaler
+    const targetShop = Object.values(db.businesses).find(
+      (b) => b.username === u && b.passwordHash === hash
+    );
+
+    if (targetShop) {
+      currentSession = { role: 'manager', businessId: targetShop.id };
+      activeManagerTab = 'profile';
+      editingProductId = null;
+      window.location.hash = '#/dashboard';
+    } else {
+      const err = document.getElementById('lp-error');
+      err.innerText = 'Invalid username or password. Please try again.';
+      err.style.display = 'block';
+    }
+  });
+}
+
+// 6. Wholesaler Register Page
+function renderRegisterPage(container) {
+  if (currentSession) {
+    window.location.hash = currentSession.role === 'super' ? '#/super-admin' : '#/dashboard';
+    return;
+  }
+
+  container.innerHTML = `
+    <div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+      <div class="glass-panel animate-slide" style="width: 100%; max-width: 500px; padding: 2.5rem;">
+
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <i data-lucide="store" style="width: 44px; height: 44px; color: var(--color-primary);"></i>
+          <h2 style="margin-top: 0.75rem; font-family: var(--font-heading);">List Your Business</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Join SAGURAmarket as a verified wholesaler</p>
+        </div>
+
+        <form id="register-page-form" style="display: flex; flex-direction: column; gap: 1.25rem;">
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Business / Shop Name</label>
+            <input id="rp-shopname" type="text" class="input-field" placeholder="e.g. Karibu Wholesalers Ltd" required />
+          </div>
+
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Business Category</label>
+            <select id="rp-category" class="input-field" style="height: 46px; background: #0b0f19; color: white;" required>
+              <option value="">Select category...</option>
+              <option>Food &amp; Beverages</option>
+              <option>Electronics</option>
+              <option>Textiles &amp; Clothing</option>
+              <option>Building Materials</option>
+              <option>Pharmaceuticals</option>
+              <option>Agriculture</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Username</label>
+              <input id="rp-username" type="text" class="input-field" placeholder="unique_username" required />
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">WhatsApp Number</label>
+              <input id="rp-phone" type="tel" class="input-field" placeholder="+255 7XX XXX XXX" required />
+            </div>
+          </div>
+
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Business Location / Address</label>
+            <input id="rp-location" type="text" class="input-field" placeholder="e.g. Kariakoo, Dar es Salaam" required />
+          </div>
+
+          <div>
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Contact Email</label>
+            <input id="rp-email" type="email" class="input-field" placeholder="business@example.com" required />
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Password</label>
+              <input id="rp-password" type="password" class="input-field" placeholder="••••••••" required />
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Confirm Password</label>
+              <input id="rp-confirm" type="password" class="input-field" placeholder="••••••••" required />
+            </div>
+          </div>
+
+          <div id="rp-error" style="display:none; color: var(--color-danger); font-size: 0.85rem; text-align: center; background: rgba(239,68,68,0.08); padding: 0.6rem; border-radius: 6px;"></div>
+          <div id="rp-success" style="display:none; color: var(--color-secondary); font-size: 0.85rem; text-align: center; background: rgba(16,185,129,0.08); padding: 0.6rem; border-radius: 6px;"></div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; height: 48px; font-size: 1rem; margin-top: 0.25rem;">
+            <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> Create Wholesaler Account
+          </button>
+        </form>
+
+        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-light); text-align: center;">
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Already have an account?
+            <a href="#/login" style="color: var(--color-primary); text-decoration: none; font-weight: 600;"> Login here</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+  `;
+  lucide.createIcons();
+
+  document.getElementById('register-page-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const errBox     = document.getElementById('rp-error');
+    const successBox = document.getElementById('rp-success');
+    errBox.style.display     = 'none';
+    successBox.style.display = 'none';
+
+    const shopName = document.getElementById('rp-shopname').value.trim();
+    const category = document.getElementById('rp-category').value;
+    const username = document.getElementById('rp-username').value.trim().toLowerCase();
+    const phone    = document.getElementById('rp-phone').value.trim();
+    const location = document.getElementById('rp-location').value.trim();
+    const email    = document.getElementById('rp-email').value.trim();
+    const password = document.getElementById('rp-password').value;
+    const confirm  = document.getElementById('rp-confirm').value;
+
+    if (password !== confirm) {
+      errBox.innerText = 'Passwords do not match.';
+      errBox.style.display = 'block';
+      return;
+    }
+    if (password.length < 6) {
+      errBox.innerText = 'Password must be at least 6 characters.';
+      errBox.style.display = 'block';
+      return;
+    }
+
+    const usernameTaken = Object.values(db.businesses).some(b => b.username === username);
+    if (usernameTaken) {
+      errBox.innerText = 'That username is already taken. Please choose another.';
+      errBox.style.display = 'block';
+      return;
+    }
+
+    // Create the new business
+      const trialEnd = new Date();
+  trialEnd.setDate(
+  trialEnd.getDate() +
+  db.paymentSettings.trialDays
+  );
+
+const newBusiness = {
+  id: `shop_${Date.now()}`,
+
+  shopName,
+  username,
+
+  passwordHash: hashPassword(password),
+
+  products: [],
+
+  adPaid: false,
+
+  paymentRequests: [],
+
+  registeredAt: new Date().toISOString(),
+
+  trialStartedAt: new Date().toISOString(),
+
+  trialEndsAt: trialEnd.toISOString(),
+
+  adExpiry: null,
+
+  paymentPending: false,
+
+  paymentHistory: []
+  
+};
+     const newId = newBusiness.id;
+    db.businesses[newId] = newBusiness;
+    saveData();
+
+    currentSession = { role: 'manager', businessId: newId };
+    activeManagerTab = 'profile';
+
+    successBox.innerText = 'Account created! Redirecting to your dashboard...';
+    successBox.style.display = 'block';
+
+    setTimeout(() => {
+      window.location.hash = '#/dashboard';
+    }, 1500);
+  });
+
+  // --- PWA Install Banner ---
+window.addEventListener('load', () => {
+    const banner = document.getElementById('install-banner');
+    const btnLater = document.getElementById('btn-install-later');
+    const btnInstall = document.getElementById('btn-install-now');
+
+    let deferredPrompt = null;
+
+    // Capture the install prompt
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        banner.style.display = 'block';
+    });
+
+    // Later button — hide the banner
+    btnLater.addEventListener('click', () => {
+        banner.style.display = 'none';
+    });
+
+    // Install button — trigger native install
+    btnInstall.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+        }
+        banner.style.display = 'none';
+    });
+});
 }

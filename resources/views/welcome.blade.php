@@ -14,6 +14,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
+     <!--Leaflet CSS and JS  -->
+     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -32,21 +35,31 @@
                 <span class="logo-text">SAGURA<span class="logo-highlight">market</span></span>
             </a>
             <div class="nav-links">
-                <a href="#/" class="nav-link active" id="nav-find-shops">Find Shops</a>
-                <a href="#/dashboard" class="btn btn-secondary" id="nav-manager">
-                    <i data-lucide="layers" style="width: 16px; height: 16px;"></i> Manager Panel
-                </a>
-                <a href="#/super-admin" class="btn btn-secondary" id="nav-admin">
-                    <i data-lucide="shield-alert" style="width: 16px; height: 16px;"></i> Super Admin
-                </a>
-            </div>
+    <a href="#/" class="nav-link active" id="nav-find-shops">Find Shops</a>
+    
+    <!-- NEW: Auth buttons for wholesalers -->
+    <a href="#/login" class="btn btn-secondary" id="nav-login">
+        <i data-lucide="log-in" style="width: 16px; height: 16px;"></i> Login
+    </a>
+    <a href="#/register" class="btn btn-primary" id="nav-register">
+        <i data-lucide="store" style="width: 16px; height: 16px;"></i> List Your Business
+    </a>
+    
+    <!-- Keep these but hide until authenticated -->
+    <a href="#/dashboard" class="btn btn-secondary" id="nav-manager" style="display:none;">
+        <i data-lucide="layers" style="width: 16px; height: 16px;"></i> Manager Panel
+    </a>
+    <a href="#/super-admin" class="btn btn-secondary" id="nav-admin" style="display:none;">
+        <i data-lucide="shield-alert" style="width: 16px; height: 16px;"></i> Super Admin
+    </a>
+</div>
         </nav>
 
         <!-- Dynamic Content -->
         <main class="main-content" id="app-viewport"></main>
 
         <!-- Install Banner -->
-        <div id="install-banner" class="install-banner glass-panel animate-slide" style="display: block;">
+        <div id="install-banner" class="install-banner glass-panel animate-slide" style="display: none;">
             <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 0.75rem;">
                 <i data-lucide="download" style="width: 32px; height: 32px; color: var(--color-primary);"></i>
                 <div>
